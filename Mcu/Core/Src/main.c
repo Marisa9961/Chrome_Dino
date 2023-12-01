@@ -24,8 +24,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "OLED.h"
+#include "Key.h"
 #include "Game.h"
+#include "OLED.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -91,21 +92,29 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM3_Init();
   MX_I2C1_Init();
-  MX_TIM1_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
+  OLED_Init();
+
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
 
-  OLED_Init();
-
-  ShowGameOver();
+  Show_GameBegin();
+  while(1){
+    if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12) == SET)
+      break;
+  }
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  OLED_Clear();
+  HAL_TIM_Base_Start_IT(&htim4);
   while (1)
   {
+    Game_Proc();
+    Key_Proc();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -153,7 +162,101 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	if(htim == &htim4)
+	{
+		if(++OLED_Slow == 40) OLED_Slow = 0;
+		if(++Key_Slow == 10) Key_Slow = 0;
+		
+		//处理小恐龙的奔跑跳跃
+		Dino_Count++;
+		if(Dino_Count == 50)
+		{
+			Dino_Flag ^= 1;
+			
+			if(Dino_Jump_Key == 1)
+			{
+				if(Dino_Jump_Flag_Flag == 0 && Jump_FinishFlag == 0)
+				{
+					Dino_Jump_Flag ++;
+					if(Dino_Jump_Flag == 8)
+						Dino_Jump_Flag_Flag = 1;
+				}
+				else if(Dino_Jump_Flag_Flag == 1)
+				{
+					Dino_Jump_Flag --;
+					if(Dino_Jump_Flag == 0)
+					{
+						Dino_Jump_Flag_Flag = 0;
+						Jump_FinishFlag = 1;
+					}
+				}
+			}
+			
+			switch(Dino_Jump_Flag)
+			{
+				case 0:Height = 0; break;
+				case 1:Height = 6; break;
+				case 2:Height = 10;break;
+				case 3:Height = 15;break;
+				case 4:Height = 18;break;
+				case 5:Height = 21;break;
+				case 6:Height = 23;break;
+				case 7:Height = 25;break;
+				case 8:Height = 25;break;
+			}
+			
+			Dino_Count = 0;
+		}
+		
+		//随机生成仙人�?
+		Cactus_Count++;
+		if(Cactus_Count >= Cactus_CreatTime)
+		{
+			Cactus_CreatTime = rand() % 3;
+			Cactus_CreatTime += 1;
+			Cactus_CreatTime *= Cactus_CreatTime_Multiplier;
+			
+			Cactus_CreatNumber = rand() % 3;
+			switch(Cactus_CreatNumber)
+			{
+				case 0:
+					Cactus_Flag1 = 0;
+				break;
+				case 1:
+					Cactus_Flag2 = 0;
+				break;
+				case 2:
+					Cactus_Flag3 = 0;
+				break;
+			}
+			Cactus_Count= 0;
+		}
+		
+		//加�??
+		Grade_Count++;
+		if(Grade_Count == 200)
+		{
+			Grade ++;
+			if(Grade ==  50)
+				Speed ++;
+			if(Grade == 100)
+			{
+				Speed ++;
+				Cactus_CreatTime_Multiplier = 500;
+			}
+			if(Grade == 150)
+			{
+				Speed ++;
+				Cactus_CreatTime_Multiplier = 800;
+			}
+			if(Grade == 200)
+				Speed ++;
+			Grade_Count = 0;
+		}
+	}
+}
 /* USER CODE END 4 */
 
 /**

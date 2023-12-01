@@ -5,7 +5,7 @@
 DEBUG = 1
 
 # optimization 最优化
-OPT = -O0
+OPT = -Og
 
 #Flash
 OPENOCD = openocd

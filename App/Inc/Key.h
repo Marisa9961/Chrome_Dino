@@ -1,11 +1,16 @@
 #ifndef __KEY_H
 #define __KEY_H
 
-enum Key_State{
-    Start,
-    Jump
-};
+#include <stdint.h>
 
-uint8_t Get_KeyNumber(void);
+extern uint8_t Key_Slow;
+extern uint8_t Key_Value;
+extern uint8_t Key_Old;
+extern uint8_t Key_Down;
+extern uint8_t Key_Test;
+
+inline uint8_t Get_Jump(void);
+
+void Key_Proc(void);
 
 #endif
