@@ -4,6 +4,7 @@
 #include "OLED.h"
 #include "gpio.h"
 #include "Key.h"
+#include "Led.h"
 
 // 分数
 uint8_t Grade_Count = 0;
@@ -201,6 +202,7 @@ static void Game_Restart(void) {
     // Grade
     Grade_Count = 0;
     Grade = 0;
+    
     // Cactus
     Cactus_CreatTime = 3000;
     Cactus_CreatTime_Multiplier = 1000;
@@ -332,6 +334,7 @@ void Game_Proc(void) {
             Grade_Best = Grade;
         }
         
+        Led_Stop_On();
         HAL_Delay(1000);
         Show_GameOver();
         OLED_ShowString(2, 4, "Best:");
@@ -342,6 +345,7 @@ void Game_Proc(void) {
                 break;
         }
         OLED_Clear();
+        Led_Stop_Off();
         Game_Restart();
     }
 }

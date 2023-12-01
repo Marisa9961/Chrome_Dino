@@ -26,6 +26,7 @@
 #include "Key.h"
 #include "Game.h"
 #include "OLED.h"
+#include "Led.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -208,7 +209,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			Dino_Count = 0;
 		}
 		
-		//随机生成仙人掌
+		//随机生成仙人�?
 		Cactus_Count++;
 		if(Cactus_Count >= Cactus_CreatTime)
 		{
@@ -232,12 +233,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			Cactus_Count= 0;
 		}
 		
-		//加速
+		//加�??
 		Grade_Count++;
 		if(Grade_Count == 200)
 		{
 			Grade ++;
-			if(Grade ==  50)
+			if(Grade == 50)
 				Speed ++;
 			if(Grade == 100)
 			{
