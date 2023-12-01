@@ -27,6 +27,7 @@
 #include "Game.h"
 #include "OLED.h"
 #include "Led.h"
+#include "Sound.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -96,7 +97,6 @@ int main(void)
   OLED_Init();
 
   HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
-  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
 
   Show_GameBegin();
@@ -109,6 +109,7 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   OLED_Clear();
+  Sound_Start();
   HAL_TIM_Base_Start_IT(&htim4);
   while (1)
   {
@@ -209,7 +210,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			Dino_Count = 0;
 		}
 		
-		//随机生成仙人�?
+		//随机生成仙人�?
 		Cactus_Count++;
 		if(Cactus_Count >= Cactus_CreatTime)
 		{
@@ -233,7 +234,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			Cactus_Count= 0;
 		}
 		
-		//加�??
+		//加�??
 		Grade_Count++;
 		if(Grade_Count == 200)
 		{

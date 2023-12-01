@@ -5,6 +5,7 @@
 #include "gpio.h"
 #include "Key.h"
 #include "Led.h"
+#include "Sound.h"
 
 // 分数
 uint8_t Grade_Count = 0;
@@ -335,6 +336,7 @@ void Game_Proc(void) {
         }
         
         Led_Stop_On();
+        Sound_Stop();
         HAL_Delay(1000);
         Show_GameOver();
         OLED_ShowString(2, 4, "Best:");
@@ -346,6 +348,7 @@ void Game_Proc(void) {
         }
         OLED_Clear();
         Led_Stop_Off();
+        Sound_Start();
         Game_Restart();
     }
 }
