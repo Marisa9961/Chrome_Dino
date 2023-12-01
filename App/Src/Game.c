@@ -7,7 +7,7 @@
 
 // 分数
 uint8_t Grade_Count = 0;
-uint16_t Grade_best = 0;
+uint16_t Grade_Best = 0;
 uint16_t Grade = 0;
 
 // 仙人掌
@@ -327,8 +327,16 @@ void Game_Proc(void) {
             Cactus_Position2 + Cactus_Length2 - 1 >= 0 && Height <= 14 ||
         Cactus_Position1 + Cactus_Length1 - 1 <= 24 &&
             Cactus_Position1 + Cactus_Length1 - 1 >= 0 && Height <= 14) {
+        
+        if(Grade > Grade_Best){
+            Grade_Best = Grade;
+        }
+        
         HAL_Delay(1000);
         Show_GameOver();
+        OLED_ShowString(2, 4, "Best:");
+        OLED_ShowNum(2, 9, Grade_Best, 5);
+
         while (1) {
             if (Get_Start())
                 break;
