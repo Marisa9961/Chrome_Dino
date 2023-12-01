@@ -109,7 +109,10 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   OLED_Clear();
-  Sound_Start();
+
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, SET);
+  Sound_Start();//PA3作为蜂鸣器的电源 防止还没初始化完成蜂鸣器就开始响
+
   HAL_TIM_Base_Start_IT(&htim4);
   while (1)
   {
@@ -210,7 +213,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			Dino_Count = 0;
 		}
 		
-		//随机生成仙人�?
+		//随机生成仙人�??
 		Cactus_Count++;
 		if(Cactus_Count >= Cactus_CreatTime)
 		{
