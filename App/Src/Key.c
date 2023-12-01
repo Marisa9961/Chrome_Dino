@@ -9,6 +9,13 @@ uint8_t Key_Old = 0;
 uint8_t Key_Down = 0;
 uint8_t Key_Test = 0;
 
+uint8_t Get_Start(void) {
+    if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12) == SET) {
+        return 1;
+    }
+    return 0;
+}
+
 static uint8_t Get_Jump(void) {
     if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_9) == SET) {
         return 1;

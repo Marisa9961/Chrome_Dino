@@ -3,11 +3,11 @@
 
 #include <stdint.h>
 
-// 分数
+// Grade
 extern uint8_t Grade_Count;
 extern uint16_t Grade;
 
-// 仙人掌
+// Cactus
 extern uint16_t Cactus_CreatTime;
 extern uint16_t Cactus_CreatTime_Multiplier;
 extern uint8_t Cactus_CreatNumber;

@@ -100,7 +100,7 @@ int main(void)
 
   Show_GameBegin();
   while(1){
-    if(HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12) == SET)
+    if(Get_Start())
       break;
   }
   /* USER CODE END 2 */

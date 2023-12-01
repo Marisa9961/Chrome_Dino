@@ -2,9 +2,12 @@
 
 #include "Game_Font.h"
 #include "OLED.h"
+#include "gpio.h"
+#include "Key.h"
 
 // 分数
 uint8_t Grade_Count = 0;
+uint16_t Grade_best = 0;
 uint16_t Grade = 0;
 
 // 仙人掌
@@ -194,6 +197,47 @@ void Show_Cactus3(int16_t x1, int16_t y1, int16_t x2, int16_t y2) {
     }
 }
 
+static void Game_Restart(void) {
+    // Grade
+    Grade_Count = 0;
+    Grade = 0;
+    // Cactus
+    Cactus_CreatTime = 3000;
+    Cactus_CreatTime_Multiplier = 1000;
+    Cactus_CreatNumber = 0;
+    Cactus_Position1 = 127;
+    Cactus_Flag1 = 1;
+    Cactus_Position2 = 127;
+    Cactus_Flag2 = 1;
+    Cactus_Position3 = 127;
+    Cactus_Flag3 = 1;
+    Cactus_Count = 0;
+
+    // Dino
+    Height = 0;
+    Dino_Flag = 0;
+    Dino_Jump_Key = 0;
+    Dino_Jump_Flag = 0;
+    Dino_Jump_Flag_Flag = 0;
+    Dino_Count = 0;
+    Jump_FinishFlag = 0;
+
+    // Cloud
+    Cloud_Positon_1 = 100;
+    Cloud_Positon_2 = 0;
+
+    // Ground
+    OLED_Slow = 0;
+    Ground_Move_Number = 0;
+    Speed = 3;
+
+    Key_Slow = 0;
+    Key_Value = 0;
+    Key_Old = 0;
+    Key_Down = 0;
+    Key_Test = 0;
+}
+
 // 游戏进程
 void Game_Proc(void) {
     if (OLED_Slow) {
@@ -246,8 +290,8 @@ void Game_Proc(void) {
             Cactus_Flag1 = 1;
             Cactus_Position1 = 127;
         }
-        Show_Cactus1(Cactus_Position1, 5,
-                         Cactus_Position1 + Cactus_Length1 - 1, 6);
+        Show_Cactus1(Cactus_Position1, 5, Cactus_Position1 + Cactus_Length1 - 1,
+                     6);
     }
 
     // 仙人掌2
@@ -259,8 +303,8 @@ void Game_Proc(void) {
             Cactus_Flag2 = 1;
             Cactus_Position2 = 127;
         }
-        Show_Cactus2(Cactus_Position2, 5,
-                         Cactus_Position2 + Cactus_Length2 - 1, 6);
+        Show_Cactus2(Cactus_Position2, 5, Cactus_Position2 + Cactus_Length2 - 1,
+                     6);
     }
 
     // 仙人掌3
@@ -272,8 +316,8 @@ void Game_Proc(void) {
             Cactus_Flag3 = 1;
             Cactus_Position3 = 127;
         }
-        Show_Cactus3(Cactus_Position3, 6,
-                         Cactus_Position3 + Cactus_Length3 - 1, 6);
+        Show_Cactus3(Cactus_Position3, 6, Cactus_Position3 + Cactus_Length3 - 1,
+                     6);
     }
 
     // Game Over
@@ -283,9 +327,13 @@ void Game_Proc(void) {
             Cactus_Position2 + Cactus_Length2 - 1 >= 0 && Height <= 14 ||
         Cactus_Position1 + Cactus_Length1 - 1 <= 24 &&
             Cactus_Position1 + Cactus_Length1 - 1 >= 0 && Height <= 14) {
+        HAL_Delay(1000);
+        Show_GameOver();
         while (1) {
-            HAL_Delay(1000);
-            Show_GameOver();
+            if (Get_Start())
+                break;
         }
+        OLED_Clear();
+        Game_Restart();
     }
 }
