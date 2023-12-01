@@ -99,7 +99,7 @@ int main(void)
 
   OLED_Init();
 
-  
+  ShowGameOver();
   /* USER CODE END 2 */
 
   /* Infinite loop */

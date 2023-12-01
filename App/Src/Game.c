@@ -6,23 +6,21 @@
 #include "OLED.h"
 #include "main.h"
 
-void ShowGameBegin(int16_t x1, int16_t y1, int16_t x2, int16_t y2) {
-    uint16_t i = 0;
-    uint8_t j = 0;
-
-    for (i = 0; i < (y2 - y1 + 1); i++) {
-        OLED_SetCursor((y1 + i), x1);
-        for (j = 0; j < (x2 - x1 + 1); j++) OLED_WriteData(GameBegin[i][j]);
+void ShowGameBegin(void) {
+    for (uint8_t i = 0; i < 8; i++) {
+        OLED_SetCursor((0 + i), 0);
+        for (uint8_t j = 0; j < 128; j++) {
+            OLED_WriteData(GameBegin[i][j]);
+        }
     }
 }
 
-void ShowGameOver(int16_t x1, int16_t y1, int16_t x2, int16_t y2) {
-    uint16_t i = 0;
-    uint8_t j = 0;
-
-    for (i = 0; i < (y2 - y1 + 1); i++) {
-        OLED_SetCursor((y1 + i), x1);
-        for (j = 0; j < (x2 - x1 + 1); j++) OLED_WriteData(GameOver[i][j]);
+void ShowGameOver(void) {
+    for (uint8_t i = 0; i < 8; i++) {
+        OLED_SetCursor((0 + i), 0);
+        for (uint8_t j = 0; j < 128; j++) {
+            OLED_WriteData(GameOver[i][j]);
+        }
     }
 }
 
@@ -47,7 +45,7 @@ void ClearPicture(int16_t x1, int16_t y1, int16_t x2, int16_t y2) {
 }
 
 void ShowGround(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2,
-                     uint16_t Number) {
+                uint16_t Number) {
     uint16_t i = 0;
     uint8_t j = 0;
 
@@ -78,8 +76,7 @@ void ShowCloud(int16_t x1, int16_t y1, int16_t x2, int16_t y2) {
     }
 }
 
-void ShowDino(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
-                   uint8_t Number) {
+void ShowDino(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t Number) {
     uint16_t i = 0;
     uint8_t j = 0;
 
@@ -90,7 +87,7 @@ void ShowDino(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
 }
 
 void ShowDino_Jump(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
-                        uint8_t Number) {
+                   uint8_t Number) {
     uint16_t i = 0;
     uint8_t j = 0;
 
