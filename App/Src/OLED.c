@@ -1,17 +1,60 @@
-#include "i2c.h"
+#include "gpio.h"
 #include "OLED.h"
 #include "OLED_Font.h"
 
-#define OLED_Address 0x78
+#define OLED_W_SCL(x)		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, (x))
+#define OLED_W_SDA(x)		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, (x))
 
-void OLED_WriteCommand(uint8_t Command){
-	uint8_t SendBuffer[2] = {0x00, Command};
-    HAL_I2C_Master_Transmit(&hi2c1, OLED_Address, SendBuffer, sizeof(SendBuffer), HAL_MAX_DELAY);
+void OLED_I2C_Init(void)
+{
+	OLED_W_SCL(GPIO_PIN_SET);
+	OLED_W_SDA(GPIO_PIN_SET);
 }
 
-void OLED_WriteData(uint8_t Data){
-	uint8_t SendBuffer[2] = {0x40, Data};
-    HAL_I2C_Master_Transmit(&hi2c1, OLED_Address, SendBuffer, sizeof(SendBuffer), HAL_MAX_DELAY);
+void OLED_I2C_Start(void)
+{
+	OLED_W_SDA(GPIO_PIN_SET);
+	OLED_W_SCL(GPIO_PIN_SET);
+	OLED_W_SDA(GPIO_PIN_RESET);
+	OLED_W_SCL(GPIO_PIN_RESET);
+}
+
+void OLED_I2C_Stop(void)
+{
+	OLED_W_SDA(GPIO_PIN_RESET);
+	OLED_W_SCL(GPIO_PIN_SET);
+	OLED_W_SDA(GPIO_PIN_SET);
+}
+
+void OLED_I2C_SendByte(uint8_t Byte)
+{
+	uint8_t i;
+	for (i = 0; i < 8; i++)
+	{
+		OLED_W_SDA(Byte & (0x80 >> i));
+		OLED_W_SCL(GPIO_PIN_SET);
+		OLED_W_SCL(GPIO_PIN_RESET);
+	}
+	OLED_W_SCL(GPIO_PIN_SET);
+	OLED_W_SCL(GPIO_PIN_RESET);
+}
+
+void OLED_WriteCommand(uint8_t Command)
+{
+	OLED_I2C_Start();
+	OLED_I2C_SendByte(0x78);
+	OLED_I2C_SendByte(0x00);
+	OLED_I2C_SendByte(Command);
+	OLED_I2C_Stop();
+}
+
+void OLED_WriteData(uint8_t Data)
+{
+	OLED_I2C_Start();
+	OLED_I2C_SendByte(0x78);
+	OLED_I2C_SendByte(0x40);
+	OLED_I2C_SendByte(Data);
+	OLED_I2C_Stop();
 }
 
 void OLED_SetCursor(uint8_t Y, uint8_t X)
@@ -21,17 +64,52 @@ void OLED_SetCursor(uint8_t Y, uint8_t X)
 	OLED_WriteCommand(0x00 | (X & 0x0F));
 }
 
-
-void OLED_Clear(void){
-    uint8_t i, j;
-    for (j = 0; j < 8; j++){
+void OLED_Clear(void)
+{  
+	uint8_t i, j;
+	for (j = 0; j < 8; j++)
+	{
 		OLED_SetCursor(j, 0);
-		for(i = 0; i < 128; i++){
+		for(i = 0; i < 128; i++)
+		{
 			OLED_WriteData(0x00);
 		}
 	}
 }
 
+void OLED_ShowChar(uint8_t Line, uint8_t Column, char Char)
+{      	
+	uint8_t i;
+	OLED_SetCursor((Line - 1) * 2, (Column - 1) * 8);
+	for (i = 0; i < 8; i++)
+	{
+		OLED_WriteData(OLED_F8x16[Char - ' '][i]);
+	}
+	OLED_SetCursor((Line - 1) * 2 + 1, (Column - 1) * 8);
+	for (i = 0; i < 8; i++)
+	{
+		OLED_WriteData(OLED_F8x16[Char - ' '][i + 8]);
+	}
+}
+
+uint32_t OLED_Pow(uint32_t X, uint32_t Y)
+{
+	uint32_t Result = 1;
+	while (Y--)
+	{
+		Result *= X;
+	}
+	return Result;
+}
+
+void OLED_ShowNum(uint8_t Line, uint8_t Column, uint32_t Number, uint8_t Length)
+{
+	uint8_t i;
+	for (i = 0; i < Length; i++)							
+	{
+		OLED_ShowChar(Line, Column + i, Number / OLED_Pow(10, Length - i - 1) % 10 + '0');
+	}
+}
 
 void OLED_Init(void)
 {
@@ -78,44 +156,4 @@ void OLED_Init(void)
 	OLED_WriteCommand(0xAF);	//开启显示
 		
 	OLED_Clear();				//OLED清屏
-}
-
-void OLED_ShowChar(uint8_t Line, uint8_t Column, char Char)
-{      	
-	uint8_t i;
-	OLED_SetCursor((Line - 1) * 2, (Column - 1) * 8);		//设置光标位置在上半部分
-	for (i = 0; i < 8; i++){
-		OLED_WriteData(OLED_F8x16[Char - ' '][i]);			//显示上半部分内容
-	}
-	OLED_SetCursor((Line - 1) * 2 + 1, (Column - 1) * 8);	//设置光标位置在下半部分
-	for (i = 0; i < 8; i++){
-		OLED_WriteData(OLED_F8x16[Char - ' '][i + 8]);		//显示下半部分内容
-	}
-}
-
-void OLED_ShowString(uint8_t Line, uint8_t Column, char *String)
-{
-	uint8_t i;
-	for (i = 0; String[i] != '\0'; i++){
-		OLED_ShowChar(Line, Column + i, String[i]);
-	}
-}
-
-void OLED_ShowNum(uint8_t Line, uint8_t Column, uint32_t Number, uint8_t Length)
-{
-	uint8_t i;
-	for (i = 0; i < Length; i++)							
-	{
-		OLED_ShowChar(Line, Column + i, Number / OLED_Pow(10, Length - i - 1) % 10 + '0');
-	}
-}
-
-uint32_t OLED_Pow(uint32_t X, uint32_t Y)
-{
-	uint32_t Result = 1;
-	while (Y--)
-	{
-		Result *= X;
-	}
-	return Result;
 }

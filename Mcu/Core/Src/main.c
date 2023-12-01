@@ -18,7 +18,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "i2c.h"
 #include "tim.h"
 #include "gpio.h"
 
@@ -91,7 +90,6 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
-  MX_I2C1_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
   OLED_Init();
@@ -210,7 +208,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			Dino_Count = 0;
 		}
 		
-		//随机生成仙人�?
+		//随机生成仙人掌
 		Cactus_Count++;
 		if(Cactus_Count >= Cactus_CreatTime)
 		{
@@ -234,7 +232,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			Cactus_Count= 0;
 		}
 		
-		//加�??
+		//加速
 		Grade_Count++;
 		if(Grade_Count == 200)
 		{

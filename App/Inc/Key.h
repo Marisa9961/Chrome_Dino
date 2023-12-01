@@ -9,8 +9,6 @@ extern uint8_t Key_Old;
 extern uint8_t Key_Down;
 extern uint8_t Key_Test;
 
-inline uint8_t Get_Jump(void);
-
-void Key_Proc(void);
+static uint8_t Get_Jump(void);
 
 #endif
