@@ -1,16 +1,22 @@
 #include "Game.h"
 
 #include "Game_Font.h"
-#include "OLED.h"
-#include "gpio.h"
 #include "Key.h"
 #include "Led.h"
+#include "OLED.h"
 #include "Sound.h"
+#include "gpio.h"
 
 // 分数
 uint8_t Grade_Count = 0;
 uint16_t Grade_Best = 0;
 uint16_t Grade = 0;
+
+struct Sgrade {
+    uint8_t grade_count;
+    uint16_t grade_best;
+    uint16_t grade;
+};
 
 // 仙人掌
 uint16_t Cactus_CreatTime = 3000;
@@ -27,6 +33,17 @@ int8_t Cactus_Position3 = 127;
 uint8_t Cactus_Flag3 = 1;
 uint16_t Cactus_Count = 0;
 
+struct Scactus {
+    uint16_t cactus_count;
+    uint16_t cactus_creat_time;
+    uint8_t cactus_creat_number;
+    uint16_t cactus_creatTime_multiplier;
+
+    uint8_t cactus_flag[3];
+    int8_t cactus_length[3];
+    int8_t cactus_position[3];
+};
+
 // Dino
 uint8_t Height = 0;
 uint8_t Dino_Flag = 0;
@@ -36,15 +53,36 @@ uint8_t Dino_Jump_Flag_Flag = 0;
 uint8_t Dino_Count = 0;
 uint8_t Jump_FinishFlag = 0;
 
+struct Sdino {
+    uint8_t height;
+    uint8_t dino_flag;
+    uint8_t dino_jump_key;
+    uint8_t dino_jump_flag;
+    uint8_t dino_jump_flag_flag;
+    uint8_t dino_count;
+    uint8_t jump_finishFlag;
+};
+
 // Cloud
 const uint8_t Cloud_Length = 27;
 int8_t Cloud_Positon_1 = 100;
 int8_t Cloud_Positon_2 = 0;
 
+struct Scloud {
+    uint8_t cloud_length;
+    int8_t cloud_positon[2];
+};
+
 // Ground
 uint8_t OLED_Slow = 0;
 uint16_t Ground_Move_Number = 0;
 uint8_t Speed = 3;
+
+struct Sground {
+    uint8_t speed;
+    uint8_t OLED_Slow;
+    uint16_t Ground_Move_Number;
+};
 
 // 游戏绘制
 void Show_GameBegin(void) {
@@ -203,7 +241,7 @@ static void Game_Restart(void) {
     // Grade
     Grade_Count = 0;
     Grade = 0;
-    
+
     // Cactus
     Cactus_CreatTime = 3000;
     Cactus_CreatTime_Multiplier = 1000;
@@ -330,11 +368,10 @@ void Game_Proc(void) {
             Cactus_Position2 + Cactus_Length2 - 1 >= 0 && Height <= 14 ||
         Cactus_Position1 + Cactus_Length1 - 1 <= 24 &&
             Cactus_Position1 + Cactus_Length1 - 1 >= 0 && Height <= 14) {
-        
-        if(Grade > Grade_Best){
+        if (Grade > Grade_Best) {
             Grade_Best = Grade;
         }
-        
+
         Led_Stop_On();
         Sound_Stop();
         HAL_Delay(1000);
