@@ -1,5 +1,7 @@
 #include "Key.h"
 
+#include "Game.h"
+
 uint8_t Key_Slow = 0;
 uint8_t Key_Value = 0;
 uint8_t Key_Old = 0;

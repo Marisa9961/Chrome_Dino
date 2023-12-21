@@ -51,6 +51,7 @@ void Show_Cactus1(int16_t x1, int16_t y1, int16_t x2, int16_t y2);
 void Show_Cactus2(int16_t x1, int16_t y1, int16_t x2, int16_t y2);
 void Show_Cactus3(int16_t x1, int16_t y1, int16_t x2, int16_t y2);
 
+void gameInit(void);
 void Game_Proc(void);
 
 void timPeriodElapsedCallback();

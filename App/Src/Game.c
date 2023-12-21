@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "Key.h"
 
 static struct sGrade {
     uint16_t num;
@@ -122,6 +123,15 @@ void Show_GameOver(void) {
         OLED_SetCursor((0 + i), 0);
         for (uint8_t j = 0; j < 128; j++) {
             OLED_WriteData(GameOver[i][j]);
+        }
+    }
+}
+
+void gameMenu(uint8_t menu[][128]){
+    for (uint8_t i = 0; i < 8; i++) {
+        OLED_SetCursor((0 + i), 0);
+        for (uint8_t j = 0; j < 128; j++) {
+            OLED_WriteData(menu[i][j]);
         }
     }
 }
@@ -398,7 +408,9 @@ void Game_Proc(void) {
         Led_Stop_On();
         Sound_Stop();
         HAL_Delay(1000);
-        Show_GameOver();
+        
+        gameMenu(GameOver);
+
         OLED_ShowString(2, 4, "Best:");
         OLED_ShowNum(2, 9, grade.best, 5);
 
@@ -471,7 +483,7 @@ void timPeriodElapsedCallback() {
         Dino_Count = 0;
     }
 
-    // 随机生成仙人�??
+    // 生成仙人掌
     Cactus_Count++;
     if (Cactus_Count >= Cactus_CreatTime) {
         Cactus_CreatTime = rand() % 3;
