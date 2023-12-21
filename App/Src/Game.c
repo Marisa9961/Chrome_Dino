@@ -12,12 +12,6 @@ uint8_t Grade_Count = 0;
 uint16_t Grade_Best = 0;
 uint16_t Grade = 0;
 
-struct sGrade {
-    uint8_t grade_count;
-    uint16_t grade_best;
-    uint16_t grade;
-};
-
 // 仙人掌
 uint16_t Cactus_CreatTime = 3000;
 uint16_t Cactus_CreatTime_Multiplier = 1000;
@@ -33,17 +27,6 @@ int8_t Cactus_Position3 = 127;
 uint8_t Cactus_Flag3 = 1;
 uint16_t Cactus_Count = 0;
 
-struct sCactus {
-    uint16_t cactus_count;
-    uint16_t cactus_creat_time;
-    uint8_t cactus_creat_number;
-    uint16_t cactus_creatTime_multiplier;
-
-    uint8_t cactus_flag[3];
-    int8_t cactus_length[3];
-    int8_t cactus_position[3];
-};
-
 // Dino
 uint8_t Height = 0;
 uint8_t Dino_Flag = 0;
@@ -53,36 +36,15 @@ uint8_t Dino_Jump_Flag_Flag = 0;
 uint8_t Dino_Count = 0;
 uint8_t Jump_FinishFlag = 0;
 
-struct sDino {
-    uint8_t height;
-    uint8_t dino_flag;
-    uint8_t dino_jump_key;
-    uint8_t dino_jump_flag;
-    uint8_t dino_jump_flag_flag;
-    uint8_t dino_count;
-    uint8_t jump_finishFlag;
-};
-
 // Cloud
 const uint8_t Cloud_Length = 27;
 int8_t Cloud_Positon_1 = 100;
 int8_t Cloud_Positon_2 = 0;
 
-struct sCloud {
-    uint8_t cloud_length;
-    int8_t cloud_positon[2];
-};
-
 // Ground
 uint8_t OLED_Slow = 0;
 uint16_t Ground_Move_Number = 0;
 uint8_t Speed = 3;
-
-struct sGround {
-    uint8_t speed;
-    uint8_t OLED_Slow;
-    uint16_t Ground_Move_Number;
-};
 
 // 游戏绘制
 void Show_GameBegin(void) {
