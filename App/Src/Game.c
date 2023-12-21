@@ -12,7 +12,7 @@ uint8_t Grade_Count = 0;
 uint16_t Grade_Best = 0;
 uint16_t Grade = 0;
 
-struct Sgrade {
+struct sGrade {
     uint8_t grade_count;
     uint16_t grade_best;
     uint16_t grade;
@@ -33,7 +33,7 @@ int8_t Cactus_Position3 = 127;
 uint8_t Cactus_Flag3 = 1;
 uint16_t Cactus_Count = 0;
 
-struct Scactus {
+struct sCactus {
     uint16_t cactus_count;
     uint16_t cactus_creat_time;
     uint8_t cactus_creat_number;
@@ -53,7 +53,7 @@ uint8_t Dino_Jump_Flag_Flag = 0;
 uint8_t Dino_Count = 0;
 uint8_t Jump_FinishFlag = 0;
 
-struct Sdino {
+struct sDino {
     uint8_t height;
     uint8_t dino_flag;
     uint8_t dino_jump_key;
@@ -68,7 +68,7 @@ const uint8_t Cloud_Length = 27;
 int8_t Cloud_Positon_1 = 100;
 int8_t Cloud_Positon_2 = 0;
 
-struct Scloud {
+struct sCloud {
     uint8_t cloud_length;
     int8_t cloud_positon[2];
 };
@@ -78,7 +78,7 @@ uint8_t OLED_Slow = 0;
 uint16_t Ground_Move_Number = 0;
 uint8_t Speed = 3;
 
-struct Sground {
+struct sGround {
     uint8_t speed;
     uint8_t OLED_Slow;
     uint16_t Ground_Move_Number;
