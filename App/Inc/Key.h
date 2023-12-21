@@ -1,7 +1,7 @@
 #ifndef __KEY_H
 #define __KEY_H
 
-#include <stdint.h>
+#include "prf.h"
 
 extern uint8_t Key_Slow;
 extern uint8_t Key_Value;

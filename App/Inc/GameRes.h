@@ -1,7 +1,7 @@
-#ifndef __GAME_FONT_H
+﻿#ifndef __GAME_FONT_H
 #define __GAME_FONT_H
 
-#include <stdint.h>
+#include "prf.h"
 
 const uint8_t GameBegin[][128] = {
     0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X00, 0X00,

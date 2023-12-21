@@ -1,12 +1,5 @@
 #include "Game.h"
 
-#include "Game_Font.h"
-#include "Key.h"
-#include "Led.h"
-#include "OLED.h"
-#include "Sound.h"
-#include "gpio.h"
-
 // 分数
 uint8_t Grade_Count = 0;
 uint16_t Grade_Best = 0;
@@ -45,6 +38,10 @@ int8_t Cloud_Positon_2 = 0;
 uint8_t OLED_Slow = 0;
 uint16_t Ground_Move_Number = 0;
 uint8_t Speed = 3;
+
+void gameInit(void) {
+    // todo
+}
 
 // 游戏绘制
 void Show_GameBegin(void) {
@@ -349,5 +346,105 @@ void Game_Proc(void) {
         Led_Stop_Off();
         Sound_Start();
         Game_Restart();
+    }
+}
+
+void timPeriodElapsedCallback() {
+    if (++OLED_Slow == 40)
+        OLED_Slow = 0;
+    if (++Key_Slow == 10)
+        Key_Slow = 0;
+
+    // 处理小恐龙的奔跑跳跃
+    Dino_Count++;
+    if (Dino_Count == 50) {
+        Dino_Flag ^= 1;
+
+        if (Dino_Jump_Key == 1) {
+            if (Dino_Jump_Flag_Flag == 0 && Jump_FinishFlag == 0) {
+                Dino_Jump_Flag++;
+                if (Dino_Jump_Flag == 8)
+                    Dino_Jump_Flag_Flag = 1;
+            } else if (Dino_Jump_Flag_Flag == 1) {
+                Dino_Jump_Flag--;
+                if (Dino_Jump_Flag == 0) {
+                    Dino_Jump_Flag_Flag = 0;
+                    Jump_FinishFlag = 1;
+                }
+            }
+        }
+
+        switch (Dino_Jump_Flag) {
+            case 0:
+                Height = 0;
+                break;
+            case 1:
+                Height = 6;
+                break;
+            case 2:
+                Height = 10;
+                break;
+            case 3:
+                Height = 15;
+                break;
+            case 4:
+                Height = 18;
+                break;
+            case 5:
+                Height = 21;
+                break;
+            case 6:
+                Height = 23;
+                break;
+            case 7:
+                Height = 25;
+                break;
+            case 8:
+                Height = 25;
+                break;
+        }
+
+        Dino_Count = 0;
+    }
+
+    // 随机生成仙人�??
+    Cactus_Count++;
+    if (Cactus_Count >= Cactus_CreatTime) {
+        Cactus_CreatTime = rand() % 3;
+        Cactus_CreatTime += 1;
+        Cactus_CreatTime *= Cactus_CreatTime_Multiplier;
+
+        Cactus_CreatNumber = rand() % 3;
+        switch (Cactus_CreatNumber) {
+            case 0:
+                Cactus_Flag1 = 0;
+                break;
+            case 1:
+                Cactus_Flag2 = 0;
+                break;
+            case 2:
+                Cactus_Flag3 = 0;
+                break;
+        }
+        Cactus_Count = 0;
+    }
+
+    // 加�??
+    Grade_Count++;
+    if (Grade_Count == 200) {
+        Grade++;
+        if (Grade == 50)
+            Speed++;
+        if (Grade == 100) {
+            Speed++;
+            Cactus_CreatTime_Multiplier = 500;
+        }
+        if (Grade == 150) {
+            Speed++;
+            Cactus_CreatTime_Multiplier = 800;
+        }
+        if (Grade == 200)
+            Speed++;
+        Grade_Count = 0;
     }
 }

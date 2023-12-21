@@ -1,4 +1,4 @@
-#include "tim.h"
+#include "Sound.h"
 
 void Sound_On() { __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 1380); }
 

@@ -1,7 +1,8 @@
 #ifndef __GAME_H
 #define __GAME_H
 
-#include <stdint.h>
+#include "prf.h"
+#include "GameRes.h"
 
 // Grade
 extern uint8_t Grade_Count;
@@ -55,5 +56,7 @@ void Show_Cactus2(int16_t x1, int16_t y1, int16_t x2, int16_t y2);
 void Show_Cactus3(int16_t x1, int16_t y1, int16_t x2, int16_t y2);
 
 void Game_Proc(void);
+
+void timPeriodElapsedCallback();
 
 #endif
