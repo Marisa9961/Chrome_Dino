@@ -1,12 +1,8 @@
 #ifndef __GAME_H
 #define __GAME_H
 
-#include "prf.h"
 #include "GameRes.h"
-
-// Grade
-extern uint8_t Grade_Count;
-extern uint16_t Grade;
+#include "prf.h"
 
 // Cactus
 extern uint16_t Cactus_CreatTime;

@@ -1,9 +1,10 @@
 #include "Game.h"
 
-// 分数
-uint8_t Grade_Count = 0;
-uint16_t Grade_Best = 0;
-uint16_t Grade = 0;
+static struct sGrade {
+    uint16_t num;
+    uint16_t best;
+    uint8_t count;
+} grade;
 
 // 仙人掌
 uint16_t Cactus_CreatTime = 3000;
@@ -20,6 +21,16 @@ int8_t Cactus_Position3 = 127;
 uint8_t Cactus_Flag3 = 1;
 uint16_t Cactus_Count = 0;
 
+static struct sCactus {
+    uint16_t createTime;
+    uint8_t createNumber;
+    uint16_t createTimeMultiplier;
+    int8_t length[3];
+    int8_t position[3];
+    uint8_t flag[3];
+    uint16_t count;
+} cactus;
+
 // Dino
 uint8_t Height = 0;
 uint8_t Dino_Flag = 0;
@@ -29,18 +40,71 @@ uint8_t Dino_Jump_Flag_Flag = 0;
 uint8_t Dino_Count = 0;
 uint8_t Jump_FinishFlag = 0;
 
+static struct sDino {
+    uint8_t flag;
+    uint8_t height;
+    uint8_t jumpKey;
+    uint8_t jumpFlag;
+    uint8_t jumpFlagFlag;
+    uint8_t count;
+    uint8_t finishFlag;
+} dino;
+
 // Cloud
 const uint8_t Cloud_Length = 27;
 int8_t Cloud_Positon_1 = 100;
 int8_t Cloud_Positon_2 = 0;
+
+static struct sCloud {
+    uint8_t length;
+    int8_t position[2];
+} cloud;
 
 // Ground
 uint8_t OLED_Slow = 0;
 uint16_t Ground_Move_Number = 0;
 uint8_t Speed = 3;
 
+static struct sGround {
+    uint8_t speed;
+    uint8_t OLED_slow;
+    uint16_t moveNumber;
+} ground;
+
 void gameInit(void) {
-    // todo
+    grade.num = 0;
+    grade.best = 0;
+    grade.count = 0;
+
+    cactus.createTime = 3000;
+    cactus.createTimeMultiplier = 1000;
+    cactus.createNumber = 0;
+    cactus.length[0] = 8;
+    cactus.length[1] = 16;
+    cactus.length[2] = 16;
+    cactus.position[0] = 127;
+    cactus.position[1] = 127;
+    cactus.position[2] = 127;
+    cactus.flag[0] = 1;
+    cactus.flag[1] = 1;
+    cactus.flag[2] = 1;
+    cactus.count = 0;
+
+    dino.flag = 0;
+    dino.count = 0;
+    dino.height = 0;
+    dino.jumpKey = 0;
+    dino.jumpFlag = 0;
+    dino.finishFlag = 0;
+    dino.jumpFlagFlag = 0;
+
+    cloud.length = 27;
+    cloud.position[0] = 100;
+    cloud.position[1] = 0;
+
+    ground.speed = 3;
+    ground.OLED_slow = 0;
+    ground.moveNumber = 0;
 }
 
 // 游戏绘制
@@ -198,8 +262,8 @@ void Show_Cactus3(int16_t x1, int16_t y1, int16_t x2, int16_t y2) {
 
 static void Game_Restart(void) {
     // Grade
-    Grade_Count = 0;
-    Grade = 0;
+    grade.count = 0;
+    grade.num = 0;
 
     // Cactus
     Cactus_CreatTime = 3000;
@@ -245,7 +309,7 @@ void Game_Proc(void) {
     }
     OLED_Slow = 1;
 
-    OLED_ShowNum(1, 12, Grade, 5);
+    OLED_ShowNum(1, 12, grade.num, 5);
 
     // 地面
     Ground_Move_Number += Speed;
@@ -327,8 +391,8 @@ void Game_Proc(void) {
             Cactus_Position2 + Cactus_Length2 - 1 >= 0 && Height <= 14 ||
         Cactus_Position1 + Cactus_Length1 - 1 <= 24 &&
             Cactus_Position1 + Cactus_Length1 - 1 >= 0 && Height <= 14) {
-        if (Grade > Grade_Best) {
-            Grade_Best = Grade;
+        if (grade.num > grade.best) {
+            grade.best = grade.num;
         }
 
         Led_Stop_On();
@@ -336,7 +400,7 @@ void Game_Proc(void) {
         HAL_Delay(1000);
         Show_GameOver();
         OLED_ShowString(2, 4, "Best:");
-        OLED_ShowNum(2, 9, Grade_Best, 5);
+        OLED_ShowNum(2, 9, grade.best, 5);
 
         while (1) {
             if (Get_Start())
@@ -429,22 +493,23 @@ void timPeriodElapsedCallback() {
         Cactus_Count = 0;
     }
 
-    // 加�??
-    Grade_Count++;
-    if (Grade_Count == 200) {
-        Grade++;
-        if (Grade == 50)
+    grade.count++;
+    if (grade.count == 200) {
+        grade.num++;
+        if (grade.num == 50) {
             Speed++;
-        if (Grade == 100) {
+        }
+        if (grade.num == 100) {
             Speed++;
             Cactus_CreatTime_Multiplier = 500;
         }
-        if (Grade == 150) {
+        if (grade.num == 150) {
             Speed++;
             Cactus_CreatTime_Multiplier = 800;
         }
-        if (Grade == 200)
+        if (grade.num == 200) {
             Speed++;
-        Grade_Count = 0;
+        }
+        grade.count = 0;
     }
 }
