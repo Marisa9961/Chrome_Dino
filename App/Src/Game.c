@@ -109,7 +109,7 @@ static void gameMenu(uint8_t menu[][128]) {
     }
 }
 
-void Show_ClearPicture(int16_t x1, int16_t y1, int16_t x2, int16_t y2) {
+static void gameDrawBlank(int16_t x1, int16_t y1, int16_t x2, int16_t y2) {
     uint16_t i = 0;
     uint8_t j = 0;
 
@@ -243,24 +243,43 @@ void Show_Cactus3(int16_t x1, int16_t y1, int16_t x2, int16_t y2) {
     }
 }
 
-static void gameDrawCactus(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
-                           uint8_t flag) {
+static void gameDrawCactus(uint8_t symbol) {
     uint8_t **Cactus;
     uint8_t x1_max = 0;
+    uint8_t y1_max = 0;
+    int8_t position_max;
+    uint8_t position_move;
 
-    switch (flag) {
+    switch (symbol) {
         case 0:
             x1_max = 119;
+            y1_max = 5;
             Cactus = Cactus1;
+            position_move = 3;
+            position_max = -8;
             break;
         case 1:
             x1_max = 111;
+            y1_max = 5;
             Cactus = Cactus2;
+            position_move = 8;
+            position_max = -16;
             break;
         case 2:
             x1_max = 111;
+            y1_max = 6;
             Cactus = Cactus3;
+            position_move = 8;
+            position_max = -16;
             break;
+    }
+
+    gameDrawBlank(cactus.position[symbol] + position_move, y1_max,
+                  cactus.position[symbol] + cactus.length[symbol] - 1, 6);
+    cactus.position[symbol] -= Speed;
+    if (cactus.position[symbol] < position_max) {
+        cactus.flag[symbol] = 1;
+        cactus.position[symbol] = 127;
     }
 
     uint16_t i = 0;
@@ -325,8 +344,14 @@ void Game_Proc(void) {
         }
     }
 
+    for (uint8_t i = 0; i < 3; i++) {
+        if (cactus.flag[i] == 0) {
+            gameDrawCactus()
+        }
+    }
+
     // 仙人掌1
-    if (Cactus_Flag1 == 0) {
+    if (cactus.flag[0] == 0) {
         Show_ClearPicture(Cactus_Position1 + 3, 5,
                           Cactus_Position1 + Cactus_Length1 - 1, 6);
         Cactus_Position1 -= Speed;
@@ -371,10 +396,12 @@ void Game_Proc(void) {
             Cactus_Position2 + Cactus_Length2 - 1 >= 0 && Height <= 14 ||
         Cactus_Position1 + Cactus_Length1 - 1 <= 24 &&
             Cactus_Position1 + Cactus_Length1 - 1 >= 0 && Height <= 14) {
+        // 物理反馈
         Led_Stop_On();
         Sound_Stop();
         HAL_Delay(1000);
 
+        // 结算
         if (grade.num > grade.best) {
             grade.best = grade.num;
         }
@@ -382,6 +409,7 @@ void Game_Proc(void) {
         OLED_ShowString(2, 4, "Best:");
         OLED_ShowNum(2, 9, grade.best, 5);
 
+        // 重启
         while (1) {
             if (Get_Start()) {
                 uint16_t temp = grade.best;
@@ -391,6 +419,7 @@ void Game_Proc(void) {
             break;
         }
 
+        // 关闭反馈
         Led_Stop_Off();
         Sound_Start();
         OLED_Clear();
