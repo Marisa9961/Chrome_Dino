@@ -1,4 +1,5 @@
 #include "Game.h"
+
 #include "Key.h"
 
 static struct sGrade {
@@ -6,21 +7,6 @@ static struct sGrade {
     uint16_t best;
     uint8_t count;
 } grade;
-
-// 仙人掌
-uint16_t Cactus_CreatTime = 3000;
-uint16_t Cactus_CreatTime_Multiplier = 1000;
-uint8_t Cactus_CreatNumber = 0;
-const int8_t Cactus_Length1 = 8;
-int8_t Cactus_Position1 = 127;
-uint8_t Cactus_Flag1 = 1;
-const int8_t Cactus_Length2 = 16;
-int8_t Cactus_Position2 = 127;
-uint8_t Cactus_Flag2 = 1;
-const int8_t Cactus_Length3 = 16;
-int8_t Cactus_Position3 = 127;
-uint8_t Cactus_Flag3 = 1;
-uint16_t Cactus_Count = 0;
 
 static struct sCactus {
     uint16_t createTime;
@@ -108,26 +94,7 @@ void gameInit(void) {
     ground.moveNumber = 0;
 }
 
-// 游戏绘制
-void Show_GameBegin(void) {
-    for (uint8_t i = 0; i < 8; i++) {
-        OLED_SetCursor((0 + i), 0);
-        for (uint8_t j = 0; j < 128; j++) {
-            OLED_WriteData(GameBegin[i][j]);
-        }
-    }
-}
-
-void Show_GameOver(void) {
-    for (uint8_t i = 0; i < 8; i++) {
-        OLED_SetCursor((0 + i), 0);
-        for (uint8_t j = 0; j < 128; j++) {
-            OLED_WriteData(GameOver[i][j]);
-        }
-    }
-}
-
-void gameMenu(uint8_t menu[][128]){
+static void gameMenu(uint8_t menu[][128]) {
     for (uint8_t i = 0; i < 8; i++) {
         OLED_SetCursor((0 + i), 0);
         for (uint8_t j = 0; j < 128; j++) {
@@ -270,6 +237,45 @@ void Show_Cactus3(int16_t x1, int16_t y1, int16_t x2, int16_t y2) {
     }
 }
 
+static void gameDrawCactus(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
+                           uint8_t flag) {
+    uint8_t **Cactus;
+    uint8_t x1_max = 0;
+
+    switch (flag) {
+        case 0:
+            x1_max = 119;
+            Cactus = Cactus1;
+            break;
+        case 1:
+            x1_max = 111;
+            Cactus = Cactus2;
+            break;
+        case 2:
+            x1_max = 111;
+            Cactus = Cactus3;
+            break;
+    }
+
+    uint16_t i = 0;
+    uint8_t j = 0;
+
+    for (i = 0; i < (y2 - y1 + 1); i++) {
+        if (x1 > x1_max) {
+            OLED_SetCursor((y1 + i), x1);
+            for (j = 0; j < 127 - x1; j++) OLED_WriteData(Cactus[i][j]);
+        }
+        if (x1 >= 0 && x1 <= x1_max) {
+            OLED_SetCursor((y1 + i), x1);
+            for (j = 0; j < (x2 - x1 + 1); j++) OLED_WriteData(Cactus[i][j]);
+        }
+        if (x1 < 0) {
+            OLED_SetCursor((y1 + i), 0);
+            for (j = -x1; j < (x2 - x1 + 1); j++) OLED_WriteData(Cactus[i][j]);
+        }
+    }
+}
+
 static void Game_Restart(void) {
     // Grade
     grade.count = 0;
@@ -408,7 +414,7 @@ void Game_Proc(void) {
         Led_Stop_On();
         Sound_Stop();
         HAL_Delay(1000);
-        
+
         gameMenu(GameOver);
 
         OLED_ShowString(2, 4, "Best:");

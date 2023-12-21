@@ -4,21 +4,6 @@
 #include "GameRes.h"
 #include "prf.h"
 
-// Cactus
-extern uint16_t Cactus_CreatTime;
-extern uint16_t Cactus_CreatTime_Multiplier;
-extern uint8_t Cactus_CreatNumber;
-extern const int8_t Cactus_Length1;
-extern int8_t Cactus_Position1;
-extern uint8_t Cactus_Flag1;
-extern const int8_t Cactus_Length2;
-extern int8_t Cactus_Position2;
-extern uint8_t Cactus_Flag2;
-extern const int8_t Cactus_Length3;
-extern int8_t Cactus_Position3;
-extern uint8_t Cactus_Flag3;
-extern uint16_t Cactus_Count;
-
 // Dino
 extern uint8_t Height;
 extern uint8_t Dino_Flag;
@@ -38,8 +23,6 @@ extern uint8_t OLED_Slow;
 extern uint16_t Ground_Move_Number;
 extern uint8_t Speed;
 
-void Show_GameBegin(void);
-void Show_GameOver(void);
 void Show_ClearPicture(int16_t x1, int16_t y1, int16_t x2, int16_t y2);
 void Show_Ground(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2,
                  uint16_t Number);
