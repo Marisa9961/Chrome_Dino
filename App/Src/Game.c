@@ -92,6 +92,12 @@ void gameInit(void) {
     ground.speed = 3;
     ground.OLED_slow = 0;
     ground.moveNumber = 0;
+
+    Key_Slow = 0;
+    Key_Value = 0;
+    Key_Old = 0;
+    Key_Down = 0;
+    Key_Test = 0;
 }
 
 static void gameMenu(uint8_t menu[][128]) {
@@ -276,48 +282,6 @@ static void gameDrawCactus(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
     }
 }
 
-static void Game_Restart(void) {
-    // Grade
-    grade.count = 0;
-    grade.num = 0;
-
-    // Cactus
-    Cactus_CreatTime = 3000;
-    Cactus_CreatTime_Multiplier = 1000;
-    Cactus_CreatNumber = 0;
-    Cactus_Position1 = 127;
-    Cactus_Flag1 = 1;
-    Cactus_Position2 = 127;
-    Cactus_Flag2 = 1;
-    Cactus_Position3 = 127;
-    Cactus_Flag3 = 1;
-    Cactus_Count = 0;
-
-    // Dino
-    Height = 0;
-    Dino_Flag = 0;
-    Dino_Jump_Key = 0;
-    Dino_Jump_Flag = 0;
-    Dino_Jump_Flag_Flag = 0;
-    Dino_Count = 0;
-    Jump_FinishFlag = 0;
-
-    // Cloud
-    Cloud_Positon_1 = 100;
-    Cloud_Positon_2 = 0;
-
-    // Ground
-    OLED_Slow = 0;
-    Ground_Move_Number = 0;
-    Speed = 3;
-
-    Key_Slow = 0;
-    Key_Value = 0;
-    Key_Old = 0;
-    Key_Down = 0;
-    Key_Test = 0;
-}
-
 // 游戏进程
 void Game_Proc(void) {
     if (OLED_Slow) {
@@ -407,27 +371,29 @@ void Game_Proc(void) {
             Cactus_Position2 + Cactus_Length2 - 1 >= 0 && Height <= 14 ||
         Cactus_Position1 + Cactus_Length1 - 1 <= 24 &&
             Cactus_Position1 + Cactus_Length1 - 1 >= 0 && Height <= 14) {
-        if (grade.num > grade.best) {
-            grade.best = grade.num;
-        }
-
         Led_Stop_On();
         Sound_Stop();
         HAL_Delay(1000);
 
+        if (grade.num > grade.best) {
+            grade.best = grade.num;
+        }
         gameMenu(GameOver);
-
         OLED_ShowString(2, 4, "Best:");
         OLED_ShowNum(2, 9, grade.best, 5);
 
         while (1) {
-            if (Get_Start())
-                break;
+            if (Get_Start()) {
+                uint16_t temp = grade.best;
+                gameInit();
+                grade.best = temp;
+            }
+            break;
         }
-        OLED_Clear();
+
         Led_Stop_Off();
         Sound_Start();
-        Game_Restart();
+        OLED_Clear();
     }
 }
 
