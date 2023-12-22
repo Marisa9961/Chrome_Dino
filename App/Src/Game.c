@@ -60,7 +60,7 @@ static struct sGround {
     uint16_t moveNumber;
 } ground;
 
-void gameInit(void) {
+static void gameInit(void) {
     grade.num = 0;
     grade.best = 0;
     grade.count = 0;
@@ -102,11 +102,29 @@ void gameInit(void) {
     Key_Test = 0;
 }
 
+static void gameFeedInit(void) {
+    ledInit();
+    soundInit();
+}
+
 static void gameMenu(uint8_t menu[][128]) {
     for (uint8_t i = 0; i < 8; i++) {
         OLED_SetCursor((0 + i), 0);
         for (uint8_t j = 0; j < 128; j++) {
             OLED_WriteData(menu[i][j]);
+        }
+    }
+}
+
+static void gameStart(void) {
+    gameMenu(GameBegin);
+    while (1) {
+        if (Get_Start()) {
+            state = RUN;
+            OLED_Clear();
+            soundStart(); // 蜂鸣器发信号
+            HAL_TIM_Base_Start_IT(&htim4);  // 实时处理开始
+            break;
         }
     }
 }
@@ -279,8 +297,8 @@ uint8_t gameIsLose(void) {
 
 static uint8_t gameRestart(void) {
     // 物理反馈
-    Led_Stop_On();
-    Sound_Stop();
+    ledOn();
+    soundStop();
     HAL_Delay(1000);
 
     // 结算
@@ -303,8 +321,8 @@ static uint8_t gameRestart(void) {
     }
 
     // 关闭反馈
-    Led_Stop_Off();
-    Sound_Start();
+    ledOff();
+    soundStart();
     OLED_Clear();
 }
 
@@ -370,6 +388,8 @@ void gameEvents(void) {
         switch (state) {
             case START:
                 gameInit();
+                gameFeedInit();
+                gameStart();
                 break;
             case RUN:
                 gameProc();
@@ -451,6 +471,7 @@ void timPeriodElapsedCallback() {
         cactus.count = 0;
     }
 
+    // 加速
     grade.count++;
     if (grade.count == 200) {
         grade.num++;

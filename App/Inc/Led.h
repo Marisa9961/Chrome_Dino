@@ -3,7 +3,8 @@
 
 #include "prf.h"
 
-inline void Led_Stop_On(void);
-inline void Led_Stop_Off(void);
+extern void ledInit(void);
+extern void ledOn(void);
+extern void ledOff(void);
 
 #endif

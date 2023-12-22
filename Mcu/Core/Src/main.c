@@ -97,26 +97,10 @@ int main(void)
   /* USER CODE BEGIN 2 */
   OLED_Init();
 
-  HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
-  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_4);
-
-  gameInit();
-
-  gameMenu(GameBegin);
-  while(1){
-    if(Get_Start())
-      break;
-  }
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  OLED_Clear();
-
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, SET);
-  Sound_Start();//PA3作为蜂鸣器的电源 防止还没初始化完成蜂鸣器就开始响
-
-  HAL_TIM_Base_Start_IT(&htim4);
   while (1)
   {
     gameProc();

@@ -1,5 +1,7 @@
 #include "Led.h"
 
-void Led_Stop_On(void) { __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, 20); }
+void ledInit(void) { HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1); }
 
-void Led_Stop_Off(void) { __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, 0); }
+void ledOn(void) { __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, 20); }
+
+void ledOff(void) { __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, 0); }

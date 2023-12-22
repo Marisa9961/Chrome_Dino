@@ -3,9 +3,10 @@
 
 #include "prf.h"
 
-void Sound_On();
-void Sound_Off();
-void Sound_Start();
-void Sound_Stop();
+extern void soundInit();
+extern void soundOn();
+extern void soundOff();
+extern void soundStart();
+extern void soundStop();
 
 #endif
