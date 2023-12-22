@@ -247,6 +247,7 @@ static void gameDrawCactus(uint8_t symbol) {
     uint8_t **Cactus;
     uint8_t x1_max = 0;
     uint8_t y1_max = 0;
+    uint8_t y2_max = 6;
     int8_t position_max;
     uint8_t position_move;
 
@@ -275,7 +276,7 @@ static void gameDrawCactus(uint8_t symbol) {
     }
 
     gameDrawBlank(cactus.position[symbol] + position_move, y1_max,
-                  cactus.position[symbol] + cactus.length[symbol] - 1, 6);
+                  cactus.position[symbol] + cactus.length[symbol] - 1, y2_max);
     cactus.position[symbol] -= Speed;
     if (cactus.position[symbol] < position_max) {
         cactus.flag[symbol] = 1;
@@ -285,20 +286,83 @@ static void gameDrawCactus(uint8_t symbol) {
     uint16_t i = 0;
     uint8_t j = 0;
 
-    for (i = 0; i < (y2 - y1 + 1); i++) {
-        if (x1 > x1_max) {
-            OLED_SetCursor((y1 + i), x1);
-            for (j = 0; j < 127 - x1; j++) OLED_WriteData(Cactus[i][j]);
+    for (i = 0; i < (y2_max - y1_max + 1); i++) {
+        if (cactus.position[symbol] > x1_max) {
+            OLED_SetCursor((y1_max + i), cactus.position[symbol]);
+            for (j = 0; j < 127 - cactus.position[symbol]; j++)
+                OLED_WriteData(Cactus[i][j]);
         }
-        if (x1 >= 0 && x1 <= x1_max) {
-            OLED_SetCursor((y1 + i), x1);
-            for (j = 0; j < (x2 - x1 + 1); j++) OLED_WriteData(Cactus[i][j]);
+        if (cactus.position[symbol] >= 0 && cactus.position[symbol] <= x1_max) {
+            OLED_SetCursor((y1_max + i), cactus.position[symbol]);
+            for (j = 0; j < (cactus.length[symbol] + 1); j++)
+                OLED_WriteData(Cactus[i][j]);
         }
-        if (x1 < 0) {
-            OLED_SetCursor((y1 + i), 0);
-            for (j = -x1; j < (x2 - x1 + 1); j++) OLED_WriteData(Cactus[i][j]);
+        if (cactus.position[symbol] < 0) {
+            OLED_SetCursor((y1_max + i), 0);
+            for (j = -cactus.position[symbol]; j < (cactus.length[symbol] + 1);
+                 j++)
+                OLED_WriteData(Cactus[i][j]);
         }
     }
+}
+
+uint8_t gameIsLose(void) {
+    uint8_t i = 0;
+    uint8_t x_max = 0;
+    uint8_t height_max = 0;
+    do {
+        switch (i) {
+            case 0:
+                x_max = 26;
+                height_max = 6;
+                break;
+            case 1:
+                x_max = 26;
+                height_max = 14;
+                break;
+            case 2:
+                x_max = 24;
+                height_max = 14;
+                break;
+        }
+        if (cactus.position[i] + cactus.length[i] - 1 <= x_max &&
+            cactus.position[i] + cactus.length[i] - 1 >= 0 &&
+            dino.height <= height_max) {
+            return 1;
+        }
+        i++;
+    } while (i < 3);
+    return 0;
+}
+
+static uint8_t gameRestart(void) {
+    // 物理反馈
+    Led_Stop_On();
+    Sound_Stop();
+    HAL_Delay(1000);
+
+    // 结算
+    if (grade.num > grade.best) {
+        grade.best = grade.num;
+    }
+    gameMenu(GameOver);
+    OLED_ShowString(2, 4, "Best:");
+    OLED_ShowNum(2, 9, grade.best, 5);
+
+    // 重启
+    while (1) {
+        if (Get_Start()) {
+            uint16_t temp = grade.best;
+            gameInit();
+            grade.best = temp;
+        }
+        break;
+    }
+
+    // 关闭反馈
+    Led_Stop_Off();
+    Sound_Start();
+    OLED_Clear();
 }
 
 // 游戏进程
@@ -344,85 +408,16 @@ void Game_Proc(void) {
         }
     }
 
+    //Cactus
     for (uint8_t i = 0; i < 3; i++) {
         if (cactus.flag[i] == 0) {
-            gameDrawCactus()
+            gameDrawCactus(i);
         }
-    }
-
-    // 仙人掌1
-    if (cactus.flag[0] == 0) {
-        Show_ClearPicture(Cactus_Position1 + 3, 5,
-                          Cactus_Position1 + Cactus_Length1 - 1, 6);
-        Cactus_Position1 -= Speed;
-        if (Cactus_Position1 < -8) {
-            Cactus_Flag1 = 1;
-            Cactus_Position1 = 127;
-        }
-        Show_Cactus1(Cactus_Position1, 5, Cactus_Position1 + Cactus_Length1 - 1,
-                     6);
-    }
-
-    // 仙人掌2
-    if (Cactus_Flag2 == 0) {
-        Show_ClearPicture(Cactus_Position2 + 8, 5,
-                          Cactus_Position2 + Cactus_Length2 - 1, 6);
-        Cactus_Position2 -= Speed;
-        if (Cactus_Position2 < -16) {
-            Cactus_Flag2 = 1;
-            Cactus_Position2 = 127;
-        }
-        Show_Cactus2(Cactus_Position2, 5, Cactus_Position2 + Cactus_Length2 - 1,
-                     6);
-    }
-
-    // 仙人掌3
-    if (Cactus_Flag3 == 0) {
-        Show_ClearPicture(Cactus_Position3 + 8, 6,
-                          Cactus_Position3 + Cactus_Length3 - 1, 6);
-        Cactus_Position3 -= Speed;
-        if (Cactus_Position3 < -16) {
-            Cactus_Flag3 = 1;
-            Cactus_Position3 = 127;
-        }
-        Show_Cactus3(Cactus_Position3, 6, Cactus_Position3 + Cactus_Length3 - 1,
-                     6);
     }
 
     // Game Over
-    if (Cactus_Position3 + Cactus_Length3 - 1 <= 26 &&
-            Cactus_Position3 + Cactus_Length3 - 1 >= 0 && Height <= 6 ||
-        Cactus_Position2 + Cactus_Length2 - 1 <= 26 &&
-            Cactus_Position2 + Cactus_Length2 - 1 >= 0 && Height <= 14 ||
-        Cactus_Position1 + Cactus_Length1 - 1 <= 24 &&
-            Cactus_Position1 + Cactus_Length1 - 1 >= 0 && Height <= 14) {
-        // 物理反馈
-        Led_Stop_On();
-        Sound_Stop();
-        HAL_Delay(1000);
-
-        // 结算
-        if (grade.num > grade.best) {
-            grade.best = grade.num;
-        }
-        gameMenu(GameOver);
-        OLED_ShowString(2, 4, "Best:");
-        OLED_ShowNum(2, 9, grade.best, 5);
-
-        // 重启
-        while (1) {
-            if (Get_Start()) {
-                uint16_t temp = grade.best;
-                gameInit();
-                grade.best = temp;
-            }
-            break;
-        }
-
-        // 关闭反馈
-        Led_Stop_Off();
-        Sound_Start();
-        OLED_Clear();
+    if (gameIsLose()) {
+        gameRestart();
     }
 }
 
@@ -485,43 +480,33 @@ void timPeriodElapsedCallback() {
     }
 
     // 生成仙人掌
-    Cactus_Count++;
-    if (Cactus_Count >= Cactus_CreatTime) {
-        Cactus_CreatTime = rand() % 3;
-        Cactus_CreatTime += 1;
-        Cactus_CreatTime *= Cactus_CreatTime_Multiplier;
+    cactus.count++;
+    if (cactus.count >= cactus.createTime) {
+        cactus.createTime = rand() % 3;
+        cactus.createTime += 1;
+        cactus.createTime *= cactus.createTimeMultiplier;
 
-        Cactus_CreatNumber = rand() % 3;
-        switch (Cactus_CreatNumber) {
-            case 0:
-                Cactus_Flag1 = 0;
-                break;
-            case 1:
-                Cactus_Flag2 = 0;
-                break;
-            case 2:
-                Cactus_Flag3 = 0;
-                break;
-        }
-        Cactus_Count = 0;
+        cactus.createNumber = rand() % 3;
+        cactus.flag[cactus.createNumber] = 0;
+        cactus.count = 0;
     }
 
     grade.count++;
     if (grade.count == 200) {
         grade.num++;
         if (grade.num == 50) {
-            Speed++;
+            ground.speed++;
         }
         if (grade.num == 100) {
-            Speed++;
-            Cactus_CreatTime_Multiplier = 500;
+            ground.speed++;
+            cactus.createTimeMultiplier = 500;
         }
         if (grade.num == 150) {
-            Speed++;
-            Cactus_CreatTime_Multiplier = 800;
+            ground.speed++;
+            cactus.createTimeMultiplier = 800;
         }
         if (grade.num == 200) {
-            Speed++;
+            ground.speed++;
         }
         grade.count = 0;
     }
