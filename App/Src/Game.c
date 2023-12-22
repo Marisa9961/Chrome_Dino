@@ -2,6 +2,8 @@
 
 #include "Key.h"
 
+enum GAME_STATE { START, RUN, STOP } state;
+
 static struct sGrade {
     uint16_t num;
     uint16_t best;
@@ -183,66 +185,6 @@ void Show_Dino_Jump(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
     }
 }
 
-void Show_Cactus1(int16_t x1, int16_t y1, int16_t x2, int16_t y2) {
-    uint16_t i = 0;
-    uint8_t j = 0;
-
-    for (i = 0; i < (y2 - y1 + 1); i++) {
-        if (x1 > 119) {
-            OLED_SetCursor((y1 + i), x1);
-            for (j = 0; j < 127 - x1; j++) OLED_WriteData(Cactus1[i][j]);
-        }
-        if (x1 >= 0 && x1 <= 119) {
-            OLED_SetCursor((y1 + i), x1);
-            for (j = 0; j < (x2 - x1 + 1); j++) OLED_WriteData(Cactus1[i][j]);
-        }
-        if (x1 < 0) {
-            OLED_SetCursor((y1 + i), 0);
-            for (j = -x1; j < (x2 - x1 + 1); j++) OLED_WriteData(Cactus1[i][j]);
-        }
-    }
-}
-
-void Show_Cactus2(int16_t x1, int16_t y1, int16_t x2, int16_t y2) {
-    uint16_t i = 0;
-    uint8_t j = 0;
-
-    for (i = 0; i < (y2 - y1 + 1); i++) {
-        if (x1 > 111) {
-            OLED_SetCursor((y1 + i), x1);
-            for (j = 0; j < 127 - x1; j++) OLED_WriteData(Cactus2[i][j]);
-        }
-        if (x1 >= 0 && x1 <= 111) {
-            OLED_SetCursor((y1 + i), x1);
-            for (j = 0; j < (x2 - x1 + 1); j++) OLED_WriteData(Cactus2[i][j]);
-        }
-        if (x1 < 0) {
-            OLED_SetCursor((y1 + i), 0);
-            for (j = -x1; j < (x2 - x1 + 1); j++) OLED_WriteData(Cactus2[i][j]);
-        }
-    }
-}
-
-void Show_Cactus3(int16_t x1, int16_t y1, int16_t x2, int16_t y2) {
-    uint16_t i = 0;
-    uint8_t j = 0;
-
-    for (i = 0; i < (y2 - y1 + 1); i++) {
-        if (x1 > 111) {
-            OLED_SetCursor((y1 + i), x1);
-            for (j = 0; j < 127 - x1; j++) OLED_WriteData(Cactus3[i][j]);
-        }
-        if (x1 >= 0 && x1 <= 111) {
-            OLED_SetCursor((y1 + i), x1);
-            for (j = 0; j < (x2 - x1 + 1); j++) OLED_WriteData(Cactus3[i][j]);
-        }
-        if (x1 < 0) {
-            OLED_SetCursor((y1 + i), 0);
-            for (j = -x1; j < (x2 - x1 + 1); j++) OLED_WriteData(Cactus3[i][j]);
-        }
-    }
-}
-
 static void gameDrawCactus(uint8_t symbol) {
     uint8_t **Cactus;
     uint8_t x1_max = 0;
@@ -352,6 +294,7 @@ static uint8_t gameRestart(void) {
     // 重启
     while (1) {
         if (Get_Start()) {
+            state = RUN;
             uint16_t temp = grade.best;
             gameInit();
             grade.best = temp;
@@ -366,7 +309,7 @@ static uint8_t gameRestart(void) {
 }
 
 // 游戏进程
-void Game_Proc(void) {
+void gameProc(void) {
     if (OLED_Slow) {
         return;
     }
@@ -408,7 +351,7 @@ void Game_Proc(void) {
         }
     }
 
-    //Cactus
+    // Cactus
     for (uint8_t i = 0; i < 3; i++) {
         if (cactus.flag[i] == 0) {
             gameDrawCactus(i);
@@ -417,7 +360,24 @@ void Game_Proc(void) {
 
     // Game Over
     if (gameIsLose()) {
-        gameRestart();
+        state = STOP;
+    }
+}
+
+void gameEvents(void) {
+    state = START;
+    while (1) {
+        switch (state) {
+            case START:
+                gameInit();
+                break;
+            case RUN:
+                gameProc();
+                break;
+            case STOP:
+                gameRestart();
+                break;
+        }
     }
 }
 

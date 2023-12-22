@@ -119,7 +119,7 @@ int main(void)
   HAL_TIM_Base_Start_IT(&htim4);
   while (1)
   {
-    Game_Proc();
+    gameProc();
     Key_Proc();
     /* USER CODE END WHILE */
 

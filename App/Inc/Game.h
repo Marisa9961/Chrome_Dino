@@ -23,19 +23,15 @@ extern uint8_t OLED_Slow;
 extern uint16_t Ground_Move_Number;
 extern uint8_t Speed;
 
-void Show_ClearPicture(int16_t x1, int16_t y1, int16_t x2, int16_t y2);
 void Show_Ground(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2,
                  uint16_t Number);
 void Show_Cloud(int16_t x1, int16_t y1, int16_t x2, int16_t y2);
 void Show_Dino(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t Number);
 void Show_Dino_Jump(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
                     uint8_t Number);
-void Show_Cactus1(int16_t x1, int16_t y1, int16_t x2, int16_t y2);
-void Show_Cactus2(int16_t x1, int16_t y1, int16_t x2, int16_t y2);
-void Show_Cactus3(int16_t x1, int16_t y1, int16_t x2, int16_t y2);
 
 void gameInit(void);
-void Game_Proc(void);
+void gameProc(void);
 
 void timPeriodElapsedCallback();
 
