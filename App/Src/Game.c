@@ -1,8 +1,14 @@
 #include "Game.h"
 
-#include "Key.h"
-
 enum GAME_STATE { START, RUN, STOP } state;
+
+static struct sKey {
+    uint8_t old;
+    uint8_t slow;
+    uint8_t value;
+    uint8_t down;
+    uint8_t test;
+} key;
 
 static struct sGrade {
     uint16_t num;
@@ -20,45 +26,57 @@ static struct sCactus {
     uint16_t count;
 } cactus;
 
-// Dino
-uint8_t Height = 0;
-uint8_t Dino_Flag = 0;
-uint8_t Dino_Jump_Key = 0;
-uint8_t Dino_Jump_Flag = 0;
-uint8_t Dino_Jump_Flag_Flag = 0;
-uint8_t Dino_Count = 0;
-uint8_t Jump_FinishFlag = 0;
-
 static struct sDino {
     uint8_t flag;
+    uint8_t count;
     uint8_t height;
     uint8_t jumpKey;
     uint8_t jumpFlag;
-    uint8_t jumpFlagFlag;
-    uint8_t count;
     uint8_t finishFlag;
+    uint8_t jumpFlagFlag;
 } dino;
 
-// Cloud
-const uint8_t Cloud_Length = 27;
-int8_t Cloud_Positon_1 = 100;
-int8_t Cloud_Positon_2 = 0;
+const uint8_t DinoJumpHeightList[9] = {0, 6, 10, 15, 18, 21, 23, 25, 25};
 
 static struct sCloud {
     uint8_t length;
     int8_t position[2];
 } cloud;
 
-// Ground
-uint8_t OLED_Slow = 0;
-uint16_t Ground_Move_Number = 0;
-uint8_t Speed = 3;
-
 static struct sGround {
     uint8_t speed;
-    uint8_t OLED_slow;
     uint16_t moveNumber;
 } ground;
+
+uint8_t OLED_slow;
+
+static uint8_t gameKeyStart(void) {
+    if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_12) == SET) {
+        return 1;
+    }
+    return 0;
+}
+
+static uint8_t gameKeyJump(void) {
+    if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_9) == SET) {
+        return 1;
+    }
+    return 0;
+}
+
+static void gameKeyProc(void) {
+    if (key.slow)
+        return;
+    key.slow = 1;
+
+    key.value = gameKeyJump();
+    key.down = key.value & (key.value ^ key.old);
+    key.old = key.value;
+
+    if (gameKeyJump()) {
+        dino.jumpKey = 1;
+    }
+}
 
 static void gameInit(void) {
     grade.num = 0;
@@ -92,14 +110,15 @@ static void gameInit(void) {
     cloud.position[1] = 0;
 
     ground.speed = 3;
-    ground.OLED_slow = 0;
     ground.moveNumber = 0;
 
-    Key_Slow = 0;
-    Key_Value = 0;
-    Key_Old = 0;
-    Key_Down = 0;
-    Key_Test = 0;
+    OLED_slow = 0;
+
+    key.slow = 0;
+    key.value = 0;
+    key.old = 0;
+    key.down = 0;
+    key.test = 0;
 }
 
 static void gameFeedInit(void) {
@@ -119,10 +138,10 @@ static void gameMenu(uint8_t menu[][128]) {
 static void gameStart(void) {
     gameMenu(GameBegin);
     while (1) {
-        if (Get_Start()) {
+        if (gameKeyStart()) {
             state = RUN;
             OLED_Clear();
-            soundStart(); // 蜂鸣器发信号
+            soundStart();                   // 蜂鸣器发信号
             HAL_TIM_Base_Start_IT(&htim4);  // 实时处理开始
             break;
         }
@@ -149,8 +168,8 @@ static void gameDrawBlank(int16_t x1, int16_t y1, int16_t x2, int16_t y2) {
     }
 }
 
-void Show_Ground(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2,
-                 uint16_t Number) {
+static void gameDrawGround(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2,
+                           uint16_t Number) {
     uint16_t i = 0;
     uint8_t j = 0;
 
@@ -161,27 +180,48 @@ void Show_Ground(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2,
     }
 }
 
-void Show_Cloud(int16_t x1, int16_t y1, int16_t x2, int16_t y2) {
+static void gameDrawCloud(uint8_t symbol) {
+    uint8_t y1 = 0;
+    uint8_t y2 = 0;
+    switch (symbol) {
+        case 0:
+            y1 = 3;
+            y2 = y1;
+            break;
+        case 1:
+            y1 = 2;
+            y2 = y1;
+            break;
+    }
+    gameDrawBlank(cloud.position[symbol] + 1, y1,
+                  cloud.position[symbol] + cloud.length - 1, y2);
+    cloud.position[symbol] -= (ground.speed - 1);
+    if (cloud.position[symbol] < -27)
+        cloud.position[symbol] = 127;
+
     uint16_t i = 0;
     uint8_t j = 0;
 
     for (i = 0; i < (y2 - y1 + 1); i++) {
-        if (x1 > 100) {
-            OLED_SetCursor((y1 + i), x1);
-            for (j = 0; j < 127 - x1; j++) OLED_WriteData(Cloud[i][j]);
+        if (cloud.position[symbol] > 100) {
+            OLED_SetCursor((y1 + i), cloud.position[symbol]);
+            for (j = 0; j < 127 - cloud.position[symbol]; j++)
+                OLED_WriteData(Cloud[i][j]);
         }
-        if (x1 >= 0 && x1 <= 100) {
-            OLED_SetCursor((y1 + i), x1);
-            for (j = 0; j < (x2 - x1 + 1); j++) OLED_WriteData(Cloud[i][j]);
+        if (cloud.position[symbol] >= 0 && cloud.position[symbol] <= 100) {
+            OLED_SetCursor((y1 + i), cloud.position[symbol]);
+            for (j = 0; j < (cloud.length); j++) OLED_WriteData(Cloud[i][j]);
         }
-        if (x1 < 0) {
+        if (cloud.position[symbol] < 0) {
             OLED_SetCursor((y1 + i), 0);
-            for (j = -x1; j < (x2 - x1 + 1); j++) OLED_WriteData(Cloud[i][j]);
+            for (j = -cloud.position[symbol]; j < (cloud.length); j++)
+                OLED_WriteData(Cloud[i][j]);
         }
     }
 }
 
-void Show_Dino(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t Number) {
+void gameDrawDino(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
+                  uint8_t Number) {
     uint16_t i = 0;
     uint8_t j = 0;
 
@@ -191,8 +231,8 @@ void Show_Dino(int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint8_t Number) {
     }
 }
 
-void Show_Dino_Jump(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
-                    uint8_t Number) {
+void gameDrawDinoJump(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
+                      uint8_t Number) {
     uint16_t i = 0;
     uint8_t j = 0;
 
@@ -237,7 +277,7 @@ static void gameDrawCactus(uint8_t symbol) {
 
     gameDrawBlank(cactus.position[symbol] + position_move, y1_max,
                   cactus.position[symbol] + cactus.length[symbol] - 1, y2_max);
-    cactus.position[symbol] -= Speed;
+    cactus.position[symbol] -= ground.speed;
     if (cactus.position[symbol] < position_max) {
         cactus.flag[symbol] = 1;
         cactus.position[symbol] = 127;
@@ -254,13 +294,12 @@ static void gameDrawCactus(uint8_t symbol) {
         }
         if (cactus.position[symbol] >= 0 && cactus.position[symbol] <= x1_max) {
             OLED_SetCursor((y1_max + i), cactus.position[symbol]);
-            for (j = 0; j < (cactus.length[symbol] + 1); j++)
+            for (j = 0; j < (cactus.length[symbol]); j++)
                 OLED_WriteData(Cactus[i][j]);
         }
         if (cactus.position[symbol] < 0) {
             OLED_SetCursor((y1_max + i), 0);
-            for (j = -cactus.position[symbol]; j < (cactus.length[symbol] + 1);
-                 j++)
+            for (j = -cactus.position[symbol]; j < (cactus.length[symbol]); j++)
                 OLED_WriteData(Cactus[i][j]);
         }
     }
@@ -311,7 +350,7 @@ static uint8_t gameRestart(void) {
 
     // 重启
     while (1) {
-        if (Get_Start()) {
+        if (gameKeyStart()) {
             state = RUN;
             uint16_t temp = grade.best;
             gameInit();
@@ -327,45 +366,35 @@ static uint8_t gameRestart(void) {
 }
 
 // 游戏进程
-void gameProc(void) {
-    if (OLED_Slow) {
+static void gameProc(void) {
+    if (OLED_slow) {
         return;
     }
-    OLED_Slow = 1;
+    OLED_slow = 1;
 
     OLED_ShowNum(1, 12, grade.num, 5);
 
-    // 地面
-    Ground_Move_Number += Speed;
-    Ground_Move_Number %= 560;
-    Show_Ground(0, 6, 127, 7, Ground_Move_Number);
+    // Ground
+    ground.moveNumber += ground.speed;
+    ground.moveNumber %= 560;
+    gameDrawGround(0, 6, 127, 7, ground.moveNumber);
 
-    // 云1
-    Show_ClearPicture(Cloud_Positon_1 + 1, 3,
-                      Cloud_Positon_1 + Cloud_Length - 1, 3);
-    Cloud_Positon_1 -= (Speed - 1);
-    if (Cloud_Positon_1 < -27)
-        Cloud_Positon_1 = 127;
-    Show_Cloud(Cloud_Positon_1, 3, Cloud_Positon_1 + Cloud_Length - 1, 3);
+    // Cloud
+    for (uint8_t i = 0; i < 2; i++) {
+        gameDrawCloud(i);
+    }
 
-    // 云2
-    Show_ClearPicture(Cloud_Positon_2 + 1, 2,
-                      Cloud_Positon_2 + Cloud_Length - 1, 2);
-    Cloud_Positon_2 -= (Speed - 1);
-    if (Cloud_Positon_2 < -27)
-        Cloud_Positon_2 = 127;
-    Show_Cloud(Cloud_Positon_2, 2, Cloud_Positon_2 + Cloud_Length - 1, 2);
-
-    // 小恐龙
-    if (Dino_Jump_Key == 0) {
-        Show_Dino(0, 5, 15, 6, Dino_Flag);
+    // Dino
+    if (dino.jumpKey == 0) {
+        gameDrawDino(0, 5, 15, 6, dino.flag);
     } else {
-        if (Jump_FinishFlag == 1)
-            Jump_FinishFlag = 2;
-        Show_Dino_Jump(0, 2, 15, 6, Dino_Jump_Flag);
-        if (Jump_FinishFlag == 2 && Dino_Jump_Flag == 0) {
-            Jump_FinishFlag = 0;
-            Dino_Jump_Key = 0;
+        if (dino.finishFlag == 1) {
+            dino.finishFlag = 2;
+        }
+        gameDrawDinoJump(0, 2, 15, 6, dino.jumpFlag);
+        if (dino.finishFlag == 2 && dino.jumpFlag == 0) {
+            dino.finishFlag = 0;
+            dino.jumpKey = 0;
         }
     }
 
@@ -393,6 +422,7 @@ void gameEvents(void) {
                 break;
             case RUN:
                 gameProc();
+                gameKeyProc();
                 break;
             case STOP:
                 gameRestart();
@@ -402,61 +432,32 @@ void gameEvents(void) {
 }
 
 void timPeriodElapsedCallback() {
-    if (++OLED_Slow == 40)
-        OLED_Slow = 0;
-    if (++Key_Slow == 10)
-        Key_Slow = 0;
+    if (++OLED_slow == 40)
+        OLED_slow = 0;
+    if (++key.slow == 10)
+        key.slow = 0;
 
     // 处理小恐龙的奔跑跳跃
-    Dino_Count++;
-    if (Dino_Count == 50) {
-        Dino_Flag ^= 1;
+    dino.count++;
+    if (dino.count == 50) {
+        dino.flag ^= 1;
 
-        if (Dino_Jump_Key == 1) {
-            if (Dino_Jump_Flag_Flag == 0 && Jump_FinishFlag == 0) {
-                Dino_Jump_Flag++;
-                if (Dino_Jump_Flag == 8)
-                    Dino_Jump_Flag_Flag = 1;
-            } else if (Dino_Jump_Flag_Flag == 1) {
-                Dino_Jump_Flag--;
-                if (Dino_Jump_Flag == 0) {
-                    Dino_Jump_Flag_Flag = 0;
-                    Jump_FinishFlag = 1;
+        if (dino.jumpKey == 1) {
+            if (dino.jumpFlagFlag == 0 && dino.finishFlag == 0) {
+                dino.jumpFlag++;
+                if (dino.jumpFlag == 8)
+                    dino.jumpFlagFlag = 1;
+            } else if (dino.jumpFlagFlag == 1) {
+                dino.jumpFlag--;
+                if (dino.jumpFlag == 0) {
+                    dino.jumpFlagFlag = 0;
+                    dino.finishFlag = 1;
                 }
             }
         }
 
-        switch (Dino_Jump_Flag) {
-            case 0:
-                Height = 0;
-                break;
-            case 1:
-                Height = 6;
-                break;
-            case 2:
-                Height = 10;
-                break;
-            case 3:
-                Height = 15;
-                break;
-            case 4:
-                Height = 18;
-                break;
-            case 5:
-                Height = 21;
-                break;
-            case 6:
-                Height = 23;
-                break;
-            case 7:
-                Height = 25;
-                break;
-            case 8:
-                Height = 25;
-                break;
-        }
-
-        Dino_Count = 0;
+        dino.height=DinoJumpHeightList[dino.jumpFlag];
+        dino.count = 0;
     }
 
     // 生成仙人掌

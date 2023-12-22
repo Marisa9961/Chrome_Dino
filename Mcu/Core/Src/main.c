@@ -23,7 +23,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "Key.h"
 #include "Game.h"
 #include "OLED.h"
 #include "Led.h"
@@ -96,6 +95,7 @@ int main(void)
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
   OLED_Init();
+  gameEvents();
 
   /* USER CODE END 2 */
 
@@ -103,8 +103,6 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    gameProc();
-    Key_Proc();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
