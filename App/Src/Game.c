@@ -244,39 +244,43 @@ void gameDrawDinoJump(int16_t x1, int16_t y1, int16_t x2, int16_t y2,
 }
 
 static void gameDrawCactus(uint8_t symbol) {
-    uint8_t **Cactus;
+    uint8_t y1 = 0;
+    uint8_t y2 = 6;
     uint8_t x1_max = 0;
-    uint8_t y1_max = 0;
-    uint8_t y2_max = 6;
     int8_t position_max;
     uint8_t position_move;
+    uint8_t **cactusResList;
+    uint8_t cactusResListLength;
 
     switch (symbol) {
         case 0:
+            y1 = 5;
             x1_max = 119;
-            y1_max = 5;
-            Cactus = Cactus1;
             position_move = 3;
             position_max = -8;
+            cactusResList = Cactus1;
+            cactusResListLength = 8;
             break;
         case 1:
+            y1 = 5;
             x1_max = 111;
-            y1_max = 5;
-            Cactus = Cactus2;
             position_move = 8;
             position_max = -16;
+            cactusResList = Cactus2;
+            cactusResListLength = 16;
             break;
         case 2:
+            y1 = 6;
             x1_max = 111;
-            y1_max = 6;
-            Cactus = Cactus3;
             position_move = 8;
             position_max = -16;
+            cactusResList = Cactus3;
+            cactusResListLength = 16;
             break;
     }
 
-    gameDrawBlank(cactus.position[symbol] + position_move, y1_max,
-                  cactus.position[symbol] + cactus.length[symbol] - 1, y2_max);
+    gameDrawBlank(cactus.position[symbol] + position_move, y1,
+                  cactus.position[symbol] + cactus.length[symbol] - 1, y2);
     cactus.position[symbol] -= ground.speed;
     if (cactus.position[symbol] < position_max) {
         cactus.flag[symbol] = 1;
@@ -286,21 +290,24 @@ static void gameDrawCactus(uint8_t symbol) {
     uint16_t i = 0;
     uint8_t j = 0;
 
-    for (i = 0; i < (y2_max - y1_max + 1); i++) {
+    for (i = 0; i < (y2 - y1 + 1); i++) {
         if (cactus.position[symbol] > x1_max) {
-            OLED_SetCursor((y1_max + i), cactus.position[symbol]);
+            OLED_SetCursor((y1 + i), cactus.position[symbol]);
             for (j = 0; j < 127 - cactus.position[symbol]; j++)
-                OLED_WriteData(Cactus[i][j]);
+                OLED_WriteData(
+                    *((int *)cactusResList + i * cactusResListLength + j));
         }
         if (cactus.position[symbol] >= 0 && cactus.position[symbol] <= x1_max) {
-            OLED_SetCursor((y1_max + i), cactus.position[symbol]);
+            OLED_SetCursor((y1 + i), cactus.position[symbol]);
             for (j = 0; j < (cactus.length[symbol]); j++)
-                OLED_WriteData(Cactus[i][j]);
+                OLED_WriteData(
+                    *((int *)cactusResList + i * cactusResListLength + j));
         }
         if (cactus.position[symbol] < 0) {
-            OLED_SetCursor((y1_max + i), 0);
+            OLED_SetCursor((y1 + i), 0);
             for (j = -cactus.position[symbol]; j < (cactus.length[symbol]); j++)
-                OLED_WriteData(Cactus[i][j]);
+                OLED_WriteData(
+                    *((int *)cactusResList + i * cactusResListLength + j));
         }
     }
 }
@@ -456,7 +463,7 @@ void timPeriodElapsedCallback() {
             }
         }
 
-        dino.height=DinoJumpHeightList[dino.jumpFlag];
+        dino.height = DinoJumpHeightList[dino.jumpFlag];
         dino.count = 0;
     }
 
