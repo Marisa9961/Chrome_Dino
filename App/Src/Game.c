@@ -295,19 +295,19 @@ static void gameDrawCactus(uint8_t symbol) {
             OLED_SetCursor((y1 + i), cactus.position[symbol]);
             for (j = 0; j < 127 - cactus.position[symbol]; j++)
                 OLED_WriteData(
-                    *((int *)cactusResList + i * cactusResListLength + j));
+                    *((uint8_t *)cactusResList + i * cactusResListLength + j));
         }
         if (cactus.position[symbol] >= 0 && cactus.position[symbol] <= x1_max) {
             OLED_SetCursor((y1 + i), cactus.position[symbol]);
             for (j = 0; j < (cactus.length[symbol]); j++)
                 OLED_WriteData(
-                    *((int *)cactusResList + i * cactusResListLength + j));
+                    *((uint8_t *)cactusResList + i * cactusResListLength + j));
         }
         if (cactus.position[symbol] < 0) {
             OLED_SetCursor((y1 + i), 0);
             for (j = -cactus.position[symbol]; j < (cactus.length[symbol]); j++)
                 OLED_WriteData(
-                    *((int *)cactusResList + i * cactusResListLength + j));
+                    *((uint8_t *)cactusResList + i * cactusResListLength + j));
         }
     }
 }
@@ -362,8 +362,8 @@ static uint8_t gameRestart(void) {
             uint16_t temp = grade.best;
             gameInit();
             grade.best = temp;
+            break;
         }
-        break;
     }
 
     // 关闭反馈
